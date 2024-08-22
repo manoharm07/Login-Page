@@ -1,9 +1,11 @@
 package com.example.login
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
@@ -16,8 +18,10 @@ import com.example.login.ui.theme.LoginTheme
 import com.example.login.Screen.Login
 import com.example.login.Screen.Register
 import com.example.login.Screen.Content
+import com.example.login.room.LoginViewModel
 
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -31,15 +35,16 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun App(){
     var navController = rememberNavController()
     NavHost(navController = navController, startDestination = "log") {
         composable(route = "log"){
-            Login(navController)
+            Login(viewModel = LoginViewModel(), navController)
         }
         composable("reg"){
-            Register{
+            Register(viewModel = LoginViewModel()){
                 navController.navigate("log")
             }
         }
@@ -54,6 +59,7 @@ fun App(){
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview(showSystemUi = true)
 @Composable
 fun Greet(){

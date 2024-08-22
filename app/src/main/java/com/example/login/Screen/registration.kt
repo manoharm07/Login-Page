@@ -1,7 +1,10 @@
 package com.example.login.Screen
 
+import android.content.Context
+import android.os.Build
+import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,8 +12,6 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
@@ -24,13 +25,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.login.room.LoginViewModel
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun Register(onclick : () -> Unit){
+fun Register(viewModel: LoginViewModel,onclick : () -> Unit){
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -98,14 +100,21 @@ fun Register(onclick : () -> Unit){
                 )
             },
         )
-        Button(onClick = { onclick() }) {
+        Button(onClick = {
+//                val context : Context =
+            onclick()
+//            Toast.makeText(context, "Result", Toast.LENGTH_SHORT).show()
+            viewModel.addinfo(username = username, email = email, password = password)
+
+        }) {
             Text(text = "register")
         }
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview(showSystemUi = true)
 @Composable
 fun Meet(){
-    Register (onclick = {})
+    Register (viewModel = LoginViewModel(), onclick = {})
 }

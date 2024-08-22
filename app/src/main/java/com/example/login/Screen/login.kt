@@ -40,9 +40,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.login.room.LoginViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
-fun Login(navController: NavController){
+fun Login(viewModel: LoginViewModel, navController: NavController){
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -70,9 +76,9 @@ fun Login(navController: NavController){
         )
         OutlinedTextField(
             value = username,
-            onValueChange = { username = it},
+            onValueChange = { username = it },
             keyboardActions = KeyboardActions.Default,
-            placeholder = { Text(text = "username")},
+            placeholder = { Text(text = "username") },
             leadingIcon = {
                 Image(
                     imageVector = Icons.Filled.Person,
@@ -82,7 +88,7 @@ fun Login(navController: NavController){
             isError = !nouser
         )
 
-        var ispasswordvalid by remember {
+        var noinp by remember {
             mutableStateOf(true)
         }
 
@@ -93,10 +99,9 @@ fun Login(navController: NavController){
         OutlinedTextField(
             value = password,
             onValueChange = {
-                password  = it
-                ispasswordvalid = password.length >= 8
-                            },
-            placeholder = { Text(text = "password")},
+                password = it
+            },
+            placeholder = { Text(text = "password") },
             leadingIcon = {
                 Image(
                     imageVector = Icons.Filled.Lock,
@@ -104,10 +109,9 @@ fun Login(navController: NavController){
                 )
             },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            isError = !ispasswordvalid,
             trailingIcon = {
                 Image(
-                    imageVector = if(passwordvisibility) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                    imageVector = if (passwordvisibility) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
                     contentDescription = "",
                     modifier = Modifier
                         .clickable {
@@ -115,29 +119,40 @@ fun Login(navController: NavController){
                         }
                 )
             },
-            visualTransformation = if(passwordvisibility) VisualTransformation.None else PasswordVisualTransformation()
+            visualTransformation = if (passwordvisibility) VisualTransformation.None else PasswordVisualTransformation()
 
         )
-        if(!ispasswordvalid){
-            Text(
-                text = "Password must be at least 8 characters",
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(start = 16.dp)
-            )
+        if (!nouser) {
+            Text(text = "Wrong username or password", fontSize = 16.sp, color = Color(0xFFE46969))
         }
-        if(!nouser){
-            Text(text = "Please enter username", fontSize = 16.sp,color = Color(0xFFE46969))
+        if (!noinp) {
+            Text(text = "Please enter username and password", fontSize = 16.sp, color = Color(0xFFE46969))
         }
+
         Button(onClick = {
-            if(username != "")
-                navController.navigate("content/$username")
+            if (username != "" && password != "") {
+                CoroutineScope(Dispatchers.IO).launch {
+                    val users = viewModel.getuserlist()
+                    val found = users.any { it.username == username && it.password == password }
+
+                    withContext(Dispatchers.Main) {
+                        if (found) {
+                            navController.navigate("content/$username")
+                        } else {
+                            nouser = false
+                            noinp = true
+                        }
+                    }
+                }
+            }
             else{
-                nouser = false
+                noinp = false
+                nouser = true
             }
         }) {
             Text(text = "login")
         }
+
         Row {
             Text(text = "Don't have an account?", fontSize = 16.sp)
             Text(text = "Create one",
@@ -154,5 +169,5 @@ fun Login(navController: NavController){
 @Preview(showSystemUi = true)
 @Composable
 fun Greet(){
-    Login(navController = rememberNavController())
+    Login(viewModel = LoginViewModel(),navController = rememberNavController())
 }
