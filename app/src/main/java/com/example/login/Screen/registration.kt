@@ -24,10 +24,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.login.room.LoginViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -43,6 +48,7 @@ fun Register(viewModel: LoginViewModel,onclick : () -> Unit){
         var username by remember {
             mutableStateOf("")
         }
+        val context = LocalContext.current
         var password by remember {
             mutableStateOf("")
         }
@@ -92,6 +98,8 @@ fun Register(viewModel: LoginViewModel,onclick : () -> Unit){
         OutlinedTextField(
             value = confirmpassword,
             onValueChange = { confirmpassword = it},
+            keyboardActions = KeyboardActions.Default,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
             placeholder = { Text(text = "confirmpassword") },
             leadingIcon = {
                 Image(
@@ -101,14 +109,52 @@ fun Register(viewModel: LoginViewModel,onclick : () -> Unit){
             },
         )
         Button(onClick = {
-//                val context : Context =
-            onclick()
-//            Toast.makeText(context, "Result", Toast.LENGTH_SHORT).show()
-            viewModel.addinfo(username = username, email = email, password = password)
+            CoroutineScope(Dispatchers.IO).launch {
+                var found: Boolean = false
+                val users = viewModel.getuserlist()
 
+                found = users.any { it.username == username && it.password == password }
+
+                // Switch back to the Main thread to handle UI updates
+                withContext(Dispatchers.Main) {
+
+                    // Check for the password correctness
+                    if(password != confirmpassword){
+                        val toast = Toast.makeText(context, "Password doesnot match", Toast.LENGTH_SHORT)
+                        toast.setGravity(android.view.Gravity.RELATIVE_LAYOUT_DIRECTION, 0, 0)
+                        toast.show()
+                        return@withContext
+                    }
+                    // Check if any field is empty
+                    if (username.isNullOrEmpty() || email.isNullOrEmpty() || password.isNullOrEmpty()) {
+                        val toast = Toast.makeText(context, "Please fill all the details!!", Toast.LENGTH_SHORT)
+                        toast.setGravity(android.view.Gravity.RELATIVE_LAYOUT_DIRECTION, 0, 0)
+                        toast.show()
+                        return@withContext // Exit if any field is empty
+                    }
+
+                    // Check if user already exists
+                    if (found) {
+                        val toast = Toast.makeText(context, "UserName Already exists!!", Toast.LENGTH_SHORT)
+                        toast.setGravity(android.view.Gravity.RELATIVE_LAYOUT_DIRECTION, 0, 0)
+                        toast.show()
+                        return@withContext // Exit if user exists
+                    }
+
+                    // If everything is valid, perform the registration
+                    onclick()
+                    val toast = Toast.makeText(context, "Registration Successful!!", Toast.LENGTH_SHORT)
+                    toast.setGravity(android.view.Gravity.RELATIVE_LAYOUT_DIRECTION, 0, 0)
+                    toast.show()
+
+                    // Add user info to the database or data source
+                    viewModel.addinfo(username = username, email = email, password = password)
+                }
+            }
         }) {
             Text(text = "register")
         }
+
     }
 }
 

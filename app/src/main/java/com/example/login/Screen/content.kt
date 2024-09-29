@@ -11,7 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun Content(username : String){
+fun Content(username : String, email : String){
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -20,7 +20,7 @@ fun Content(username : String){
 
     ) {
         Text(
-            text = "Welcome $username",
+            text = "Welcome $username \nYour email is : $email",
             fontSize = 36.sp,
             color = Color.Blue
             )

@@ -48,13 +48,17 @@ fun App(){
                 navController.navigate("log")
             }
         }
-        composable("content/{uname}", arguments = listOf(
+        composable("content/{uname}/{email}", arguments = listOf(
             navArgument("uname"){
+                type = NavType.StringType
+            },
+            navArgument("email"){
                 type = NavType.StringType
             }
         )){
             val username = it.arguments!!.getString("uname")
-            Content(username!!)
+            val email = it.arguments!!.getString("email")
+            Content(username!!, email!!)
         }
     }
 }

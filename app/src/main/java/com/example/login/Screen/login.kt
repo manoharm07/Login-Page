@@ -134,10 +134,11 @@ fun Login(viewModel: LoginViewModel, navController: NavController){
                 CoroutineScope(Dispatchers.IO).launch {
                     val users = viewModel.getuserlist()
                     val found = users.any { it.username == username && it.password == password }
-
                     withContext(Dispatchers.Main) {
                         if (found) {
-                            navController.navigate("content/$username")
+                            val email = users.find { it.username == username }?.mail ?: "Email not found"
+
+                            navController.navigate("content/$username/$email")
                         } else {
                             nouser = false
                             noinp = true
